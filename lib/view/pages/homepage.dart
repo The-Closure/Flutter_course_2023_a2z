@@ -1,4 +1,6 @@
-import 'package:bottom_navigate_bar/view/navigation/list_of_page.dart';
+import 'dart:math';
+
+import 'package:bottom_navigate_bar/service/get_data.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
@@ -8,126 +10,72 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-int indexOfThePage = 0;
+int indexOfThePage = 1;
 
-List<String> tasks = ["Clean", "Cooking", "Study", "Work"];
+// List<String> tasks = ["Clean", "Cooking", "Study", "Work"];
+
+// ! Responsive Design
 
 class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
-    List<Widget> pages = [
-      Scaffold(
-        body: Container(
-          child: Center(
-            child: Column(
-              children: [
-                SizedBox(
-                  height: 500,
-                  child: ListView.builder(
-                    itemCount: tasks.length,
-                    itemBuilder: (context, index) => ListTile(
-                      trailing: IconButton(
-                          onPressed: () {
-                            showDialog(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                  content: Text("Are you sure to delete this task"),
-                                      actions: [
-                                         TextButton(
-                                            onPressed: () {},
-                                            child: Text("No")),
-                                        TextButton(
-                                            onPressed: () {
-                                            setState(() {
-                                              
-                                              tasks.remove(tasks[index]);
-                                            });
-                                            Navigator.pop(context);
-                                            },
-                                            child: Text("yes")),
-                                           
-                                      ],
-                                    ));
-                          },
-                          icon: Icon(
-                            Icons.delete,
-                            color: Colors.red,
-                          )),
-                      title: Text(tasks[index]),
-                    ),
-                  ),
-                ),
-                IconButton(
-                    onPressed: () {
-                      TextEditingController newtask = TextEditingController();
-                      showModalBottomSheet(
-                        context: context,
-                        builder: (context) => Container(
-                          child: Column(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: SizedBox(
-                                  width: 300,
-                                  child: TextField(
-                                    controller: newtask,
-                                    decoration: InputDecoration(
-                                        border: OutlineInputBorder()),
-                                  ),
-                                ),
-                              ),
-                              ElevatedButton(
-                                  onPressed: () {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                        new SnackBar(
-                                            showCloseIcon: true,
-                                            dismissDirection:
-                                                DismissDirection.endToStart,
-                                            behavior: SnackBarBehavior.floating,
-                                            backgroundColor: Colors.green,
-                                            action: SnackBarAction(
-                                                label: "okay",
-                                                onPressed: () {}),
-                                            content:
-                                                Text("Success to Add task")));
-
-                                    tasks.add(newtask.text);
-
-                                    Navigator.pop(context);
-                                  },
-                                  child: Text("add new task"))
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                    icon: Icon(Icons.add)),
-              ],
+    return Scaffold(
+        body: Stack(
+      children: [
+        SizedBox(
+          width: 200,
+          height: 200,
+          child: Container(
+          decoration: ShapeDecoration(color: Colors.blue,shape: CircleBorder()),
+          ),
+        ),
+        Positioned(
+          left: 140,
+          top: 20,
+          child: Transform.rotate(
+            angle: pi / 4,
+            child: SizedBox(
+              
+          width: 20,
+          height: 100,
+          child: Container(
+            color: Colors.red,
+          ),
             ),
           ),
         ),
-      ),
-      Container(
-        color: Colors.blue,
-      ),
-      Container(
-        color: Colors.green,
-      )
-    ];
-    return Scaffold(
-      body: pages[indexOfThePage],
-      bottomSheet: NavigationBar(
-          onDestinationSelected: (value) {
-            setState(() {
-              indexOfThePage = value;
-            });
-          },
-          selectedIndex: indexOfThePage,
-          destinations: [
-            NavigationDestination(icon: Icon(Icons.home), label: 'Home'),
-            NavigationDestination(icon: Icon(Icons.person), label: 'Account'),
-            NavigationDestination(icon: Icon(Icons.message), label: 'Message'),
-          ]),
-    );
+      ],
+    )
+
+        // ? Service Layer
+        // body: StreamBuilder(
+        //   stream: getData(1000),
+        //   builder: (context, snapshot) {
+
+        //     if (snapshot.hasData) {
+        //       return Center(
+        //         child: Text(snapshot.data.toString()),
+        //       );
+        //     } else if (snapshot.connectionState == ConnectionState.waiting) {
+        //       return Center(
+        //         child: CircularProgressIndicator(),
+        //       );
+        //     } else {
+        //     return Center(
+        //         child: Text("There is an error in fetching data"),
+        //       );
+        //     }
+        //   },
+        // ),
+// ? Responsive
+        // body: LayoutBuilder(builder: (context, constraints) {
+        //   if(constraints.maxWidth > 600){
+        //     return Container(color: Colors.red,);
+        //   }
+        //   else {
+        //     return Container(color: Colors.blue,);
+        //   }
+        // },),
+        );
   }
 }
