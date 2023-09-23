@@ -1,4 +1,5 @@
 import 'package:deom/config.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -98,6 +99,8 @@ TextEditingController username = TextEditingController();
 
 TextEditingController password = TextEditingController();
 
+TextEditingController password2 = TextEditingController();
+String token ='';
 class _SecondPageState extends State<SecondPage> {
   @override
   Widget build(BuildContext context) {
@@ -137,12 +140,83 @@ class _SecondPageState extends State<SecondPage> {
               ),
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: SizedBox(
+              width: 300,
+              child: TextField(
+                obscureText: true,
+                controller: password2,
+                decoration: InputDecoration(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    hintText: 'password confirm'),
+              ),
+            ),
+          ),
           ElevatedButton(
-              onPressed: () {
-                print(username.text + "------------------" + password.text);
+              onPressed: () async {
+                Response result =
+                    await signUp(username.text, password.text, password2.text);
+                if (result.statusCode == 200) {
+                  print(result.data);
+                  token = result.data['data']['token'];
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ThirdPage(),
+                      ));
+                } else {}
               },
               child: Text("Sign up"))
         ],
+      ),
+    );
+  }
+}
+
+signUp(String username, String password, String password_confirmation) async {
+  Dio dio = Dio();
+
+  Response response = await dio.post('http://127.0.0.1:8000/api/signup', data: {
+    'username': username,
+    'password': password,
+    'password_confirmation': password_confirmation
+  });
+
+  return response;
+}
+
+getProduct() async {
+  Dio dio = Dio();
+
+  Response response = await dio.get('http://127.0.0.1:8000/api/product',options: Options(headers: {
+    'Accept':'application/json',
+    'Accept-Language':'ar',
+    "authorization": "Bearer $token"
+  }));
+
+  return response;
+}
+
+class ThirdPage extends StatelessWidget {
+  const ThirdPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: FutureBuilder(
+        future: getProduct(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return Center(
+              child: Text(snapshot.data.toString()),
+            );
+          } else {
+            return CircularProgressIndicator();
+          }
+        },
       ),
     );
   }
