@@ -1,7 +1,8 @@
-import 'dart:convert';
-
-import 'package:dio/dio.dart';
+import 'package:factory_dart/bloc/manage_example_event_bloc.dart';
+import 'package:factory_dart/provider/theme_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:provider/provider.dart';
 
 void main() {
   runApp(MyApp());
@@ -12,115 +13,110 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // return ChangeNotifierProvider(
+    //     create: (context) => ThemeProvier(),
+    //     builder: (context, child) {
+    //       var provider = Provider.of<ThemeProvier>(context);
+    //       return MaterialApp(
+    //         home: Homepage(),
+    //         theme: Provider.of<ThemeProvier>(context).theme,
+    //       );
+    //     }
     return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(),
-        body: FutureBuilder(
-          future: getData(),
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              dynamic data = snapshot.data;
-              
-              Post postData = Post.fromJson(data.toString());
-                  
-              return Center(
-                child: Text(postData.title),
-              );
-            } else if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(
-                child: CircularProgressIndicator(),
-              );
-            } else {
-              return Center(
-                child: Text("There is no Internet"),
-              );
-            }
-          },
-        ),
+      theme: ThemeData.light(),
+      home: BlocExamplePage(),
+    );
+  }
+}
+
+class Homepage extends StatelessWidget {
+  const Homepage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    var provider = Provider.of<ThemeProvier>(context);
+    return Scaffold(
+      appBar: AppBar(),
+      body: Center(
+        child: ElevatedButton(
+            onPressed: () {
+              provider.changeTheme();
+            },
+            child: Text("Hello Wolrd")),
       ),
     );
   }
 }
 
-getData() async {
-  Dio dio = Dio();
-  final response = await dio.get('http://jsonplaceholder.typicode.com/posts/1');
-  print(response.statusCode);
+class BlocExamplePage extends StatelessWidget {
+  const BlocExamplePage({super.key});
 
-  return response;
-}
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => ManageExampleEventBloc(),
+      child: Builder(builder: (context) {
+        return Scaffold(
+          appBar: AppBar(),
+          body: Center(
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: OutlinedButton(
+                      onPressed: () {
+                        context
+                            .read<ManageExampleEventBloc>()
+                            .add(ShowFlutterLogo());
+                      },
+                      child: Text("Flutter logo button")),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: OutlinedButton(
+                      onPressed: () {
+                        context
+                            .read<ManageExampleEventBloc>()
+                            .add(ShowErrorMessage());
+                      },
+                      child: Text("Error button")),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: OutlinedButton(
+                      onPressed: () {
+                        context
+                            .read<ManageExampleEventBloc>()
+                            .add(ShowCircleProgress());
+                      },
+                      child: Text("Loading Button")),
+                ),
+                ElevatedButton(onPressed: (){
+                  context.read<ManageExampleEventBloc>().add(ShowHelloWolrd());
+                }, child: Text('Hello wolrd event')),
+                BlocBuilder<ManageExampleEventBloc, ManageExampleEventState>(
+                  builder: (context, state) {
+                    if(state is Success){
+                    return FlutterLogo();
 
-class Post {
-  int userId;
-  int id;
-  String title;
-  String body;
-  Post({
-    required this.userId,
-    required this.id,
-    required this.title,
-    required this.body,
-  });
-
-  Post copyWith({
-    int? userId,
-    int? id,
-    String? title,
-    String? body,
-  }) {
-    return Post(
-      userId: userId ?? this.userId,
-      id: id ?? this.id,
-      title: title ?? this.title,
-      body: body ?? this.body,
+                    }
+                    else if (state is Loading){
+                      return CircularProgressIndicator();
+                    }
+                    else if (state is NoInternet){
+                      return ListTile(title: Text("Hello WOlrd"),subtitle: Icon(Icons.not_interested),);
+                
+                    }
+                    else {
+                      return Text("Error Message");
+                    }
+                  },
+                )
+              ],
+            ),
+          ),
+        );
+      }),
     );
-  }
-
-  Map<String, dynamic> toMap() {
-    final result = <String, dynamic>{};
-  
-    result.addAll({'userId': userId});
-    result.addAll({'id': id});
-    result.addAll({'title': title});
-    result.addAll({'body': body});
-  
-    return result;
-  }
-
-  factory Post.fromMap(Map<String, dynamic> map) {
-    return Post(
-      userId: map['userd']?.toInt() ?? 0,
-      id: map['id']?.toInt() ?? 0,
-      title: map['title'] ?? '',
-      body: map['body'] ?? '',
-    );
-  }
-
-  String toJson() => json.encode(toMap());
-
-  factory Post.fromJson(String source) => Post.fromMap(json.decode(source));
-
-  @override
-  String toString() {
-    return 'Post(userId: $userId, id: $id, title: $title, body: $body)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-  
-    return other is Post &&
-      other.userId == userId &&
-      other.id == id &&
-      other.title == title &&
-      other.body == body;
-  }
-
-  @override
-  int get hashCode {
-    return userId.hashCode ^
-      id.hashCode ^
-      title.hashCode ^
-      body.hashCode;
   }
 }
